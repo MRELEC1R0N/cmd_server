@@ -7,7 +7,7 @@ import io
 def main():
     server_ip = input("Enter server IP: ")
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((server_ip, 9999))
+    client_socket.connect((server_ip, 55000))
 
     try:
         while True:
